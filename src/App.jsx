@@ -1,35 +1,53 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState, useEffect } from 'react';
+import CitySearch from './components/CitySearch';
+import EventList from './components/EventList';
+import NumberOfEvents from './components/NumberOfEvents';
+import { getEvents, extractLocations } from './api'; 
+import './App.css';
 
-function App() {
-  const [count, setCount] = useState(0)
+const App = () => {
+  const [events, setEvents] = useState([]);
+  const [locations, setLocations] = useState([]);
+  const [numberOfEvents, setNumberOfEvents] = useState(32);
+  const [selectedCity, setSelectedCity] = useState(null);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const fetchedEvents = await getEvents();
+        setEvents(fetchedEvents);
+        setLocations(extractLocations(fetchedEvents));
+      } catch (error) {
+        console.error("Failed to fetch events:", error);
+      }
+    };
+
+    fetchEvents();
+  }, []);
+
+    const handleNumberOfEventsChange = (number) => {
+        setNumberOfEvents(number);
+    };
+
+  const handleCitySelect = (city) => {
+    setSelectedCity(city);
+  };
+
+  const getEventsByLocation = (location) => {
+        if (!location) {
+            return events.slice(0, numberOfEvents);
+        }
+        const filteredEvents = events.filter(event => event.location === location);
+        return filteredEvents.slice(0, numberOfEvents);
+    };
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <div data-testid="app-dom" className="app">
+      <CitySearch locations={locations} onCitySelect={handleCitySelect} />
+      <NumberOfEvents setNumberOfEvents={handleNumberOfEventsChange} />
+      <EventList events={getEventsByLocation(selectedCity)} />
+    </div>
+  );
+};
 
-export default App
+export default App;

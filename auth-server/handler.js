@@ -44,7 +44,6 @@ module.exports.getAccessToken = async (event) => {
     });
   })
     .then((results) => {
-      // Respond with OAuth token
       return {
         statusCode: 200,
         headers: {
@@ -55,7 +54,6 @@ module.exports.getAccessToken = async (event) => {
       };
     })
     .catch((error) => {
-      // Handle errors
       return {
         statusCode: 500,
         body: JSON.stringify(error),
